@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "nightshift",
+  "version": "${version}",
+  "name": "Nightshift",
+  "description": "A silent rival stalks your world. Learn its rules, defend your base, and banish The Understudy forever.",
+  "license": "CC0-1.0",
+  "icon": "assets/nightshift/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "nightshift.Nightshift"
+    ],
+    "client": [
+      "nightshift.client.NightshiftClient"
+    ],
+    "fabric-datagen": [
+      "nightshift.client.NightshiftDataGenerator"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
