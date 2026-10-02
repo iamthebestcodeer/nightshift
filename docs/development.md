@@ -24,6 +24,60 @@ Add providers to `NightshiftDataGenerator`, then use `./gradlew runDatagen`. The
 
 ## Verification
 
-Run `./gradlew build` after code or resource changes. GitHub Actions also builds with JDK 25 and uploads `build/libs/`. There are currently no automated gameplay tests.
+Run `./gradlew build` after code or resource changes. GitHub Actions also builds with JDK 25 and uploads `build/libs/`. The build also runs dependency-free checks for encounter timing and visibility boundaries, save serialization, and per-player data isolation via `gameplayRulesTest`. These checks do not replace in-world verification.
 
 Before considering a gameplay milestone complete, verify it in a client world and check dedicated-server startup for client class loading errors. For multiplayer-sensitive changes, test two players and confirm anger, stolen items, and effects stay scoped to the correct player. Record actual checks performed; compilation alone does not verify gameplay.
+
+## Stalking and effects verification
+
+Use a disposable, reasonably level outdoor test world. The current spawn search uses loaded surface terrain within 24–36 blocks and within 12 blocks of the player's elevation, so underground sightings are outside this milestone.
+
+1. Wait 3–5 minutes for the first sighting. Look toward it and confirm the pale humanoid stands still, its head snaps independently, and Hollow/Seen appear without stacking. Look away and back to check unseen movement. Approach within 8 blocks, or wait 30 seconds, to check disappearance.
+2. Check Hollow's reduced world audio and empty-direction sounds for 30 seconds. Check Seen's faint heartbeat for 90 seconds and the next sighting arriving 2–3 minutes after the previous one. `/effect give @s nightshift:hollow 30` and `/effect give @s nightshift:seen 90` can isolate audio/effect checks in a world with commands enabled.
+3. Use the marked scene commands below to test passive bridge/wall construction, the distant visual copy, and the quiet tunnel encounter. Existing blocks must survive construction, and builders must stop on aggression or an attack target. A long watch look-back now remains a quiet encounter; the face overlay and scream are removed.
+4. Save and reload during a calm gap and confirm the encounter deadline persists. Test dimension changes, resource reloads, effect expiration, and leaving the world to ensure audio returns normally.
+5. On a dedicated server with two clients, confirm effects stay with their target and both players freeze ordinary unseen movement by watching. Verify independent encounter deadlines and owner cleanup. Scene geometry is shared visually; only its owner's proximity causes retreat.
+
+Earlier singleplayer checks passed natural scheduling, visible freezing, unseen movement, head turns, approach/timeout, Hollow/Seen application and expiration, sound-engine gain/playback, resource reload, dimension retreat, and actual save/reopen. The previous generic scare checks are obsolete following its removal. Sound quality has not been assessed by listening.
+
+`runServer` initialized Nightshift without client class loading errors, then stopped because `run/eula.txt` is unaccepted. Dedicated-server world startup and actual two-client multiplayer checks remain unverified, so the milestones are not marked fully verified as playable.
+
+Run `./gradlew runClientGameTest` to repeat the real-client tests. They create isolated flat worlds under `build/run/clientGameTest/saves/`, drive player input, and save screenshots under `build/run/clientGameTest/screenshots/`. The initial calm gap is real, so the complete run takes several minutes. The test mod lives only in `src/gametest/` and is excluded from the installable JAR. Ordinary builds compile this harness but do not launch a GUI. This session's successful logs are retained under `build/reports/nightshift-inworld/`.
+
+## In-game test commands
+
+Enable commands in a singleplayer test world, or use operator permission level 2 on a server. Run the commands as the player being tested. `/nightshift test` lists the available actions.
+
+| Command | Action |
+| --- | --- |
+| `/nightshift test watch` | Replaces your nearby sighting with one ahead on safe loaded surface terrain. It moves while unseen and leaves within eight blocks or after 30 seconds. |
+| `/nightshift test effects` | Applies fresh, unstacked Hollow for 30 seconds and Seen for 90 seconds. |
+| `/nightshift test bridge <from> <to> <block>` | Builds a horizontal cardinal line, up to 64 cells, at up to two cells per tick. Coordinates identify the bridge floor. |
+| `/nightshift test wall <from> <to> <block>` | Completes the marked vertical rectangle, up to 32 cells wide and 16 high, filling air only. |
+| `/nightshift test replica <from> <to> <destination>` | Shows a temporary visual copy of the marked reference at the destination minimum corner. Up to 4096 source cells and 512 non-air shapes; wall width/height limits do not apply. |
+| `/nightshift test tunnel` | Places a stationary actor in clear supported space 4–6 blocks behind you; leaves when you approach within two blocks. |
+| `/nightshift test clear` | Removes your nearby actors, apparitions, Hollow, and Seen. Completed construction blocks remain. |
+
+Example commands in a flat test world (ground surface at Y=-61):
+
+```mcfunction
+/nightshift test bridge -8 -61 15 8 -61 15 minecraft:stone
+/nightshift test wall -4 -60 10 4 -57 10 minecraft:stone
+/nightshift test replica -4 -60 10 4 -57 10 -4 -60 30
+/nightshift test tunnel
+/nightshift test clear
+```
+
+Carve a ravine under the bridge in a disposable world first; existing ground cells are deliberately preserved. Adapt coordinates to your world, or use relative coordinates. Bridge/wall materials are restricted to inert masonry: stone, cobblestone, stone bricks, bricks, deepslate, cobbled deepslate, polished deepslate, deepslate bricks, and deepslate tiles. TNT, sponge, pumpkins, and other blocks with placement side effects are rejected. Mark the desired finished wall rectangle; the command fills missing blocks rather than guessing your design. For a rebuilt base, prepare the finished reference yourself and mark its bounding box. The apparition copies block states, with no inventories, sign text, or other block-entity data; it has no collision and disappears after 30 seconds or within eight blocks of its first visible block.
+
+All scene cells must be loaded, inside world bounds, and within 96 blocks of you. Repeated actor scenes replace your previous nearby actor; repeated replicas replace your previous nearby apparition. Scene actors last up to 30 seconds and retreat within two blocks. These are explicit commands, with automatic ravine/build/base/tunnel detection deferred. Passive construction may run outside midnight only while not attacking; it never overwrites or breaks blocks. Occupied cells are retried within the actor’s lifetime, and construction retreats before placing when the owner is already close. Builder spawn and movement require clear body space. `clear` does not undo placed blocks.
+
+`watch` reserves the next normal encounter deadline; use disposable worlds. Actions target the command player; operators can use `/execute as <player> run nightshift test <action>`. Living non-spectators can start scenes. If placement fails, move to a loaded clear supported area.
+
+The command regression drives actual client camera input through visible freezing, unseen movement, and a ten-second quiet look-back. The owner's earlier watch mismatch remains unreproduced in the flat first-person test world; this test makes those expectations explicit.
+
+Current focused verification passed `./gradlew build` (including geometry, timing, saved-data, and data-isolation rules) and real singleplayer client-world commands for bridge completion/straightness, protection of existing blocks, wall completion, construction cancellation on aggression, actor replacement, replica synchronization without physical edits, 30-second expiry, approach disappearance, repeat replacement/clear, and the tunnel look-back/approach. The quiet watch command regression also passed. Screenshots were inspected for all four scenes. Isolating the apparition exposed a distance-culling bug; an explicit render range and regression check fixed it. The final scene log is `build/reports/nightshift-inworld/environmental-scenes.log`, and the watch command log is `build/reports/nightshift-inworld/environmental-scenes-first.log`.
+
+These small flat-world tests do not establish performance in representative complex worlds. Actual two-client isolation and a dedicated-server world remain unverified.
+
+Bug regression checks also passed in actual client worlds: destructive material rejection beside redstone, collision-safe initial spawn and per-tick construction movement, retreat before any placement, occupied-cell retry, a 40-cell replica reference, a sparse replica with a distant empty marked corner reaching the client, and unsupported ocean sightings being rejected. Presentation checks inspect actual sound-engine category gains after stop/reload, resource reload, dimension change, and Hollow removal. A client-only sound-engine reset hook invalidates the cached gain, including while paused. The head-turn harness now waits for an actual server head-snap tick. Logs: `build/reports/nightshift-inworld/bug-regressions-construction.log` (scene checks passed; its later presentation check found the harness timing issue) and `build/reports/nightshift-inworld/bug-regressions-audio.log` (presentation rerun passed).

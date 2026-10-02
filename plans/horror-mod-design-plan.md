@@ -23,9 +23,9 @@ A player-shaped thing lives in your world, is better at Minecraft than you, and 
 
 ## Core Rules
 
-1. It can only place or break blocks at **midnight**, and only when **angry at you**.
+1. Siege placement/breaking requires **midnight** and **anger at you**. Approved exception: passive environmental bridge/wall scenes may place blocks at other times only while not attacking the player. They never break or replace existing blocks.
 2. Outside that, it can still stalk, steal from open containers, apply effects, and summon minions.
-3. It mines and builds at roughly player speed. A stone base falls quickly; a netherite house takes most of a night.
+3. Passive scene bridges may be impossibly fast and perfectly straight. Siege mining/building stays at roughly player speed. A stone base falls quickly; a netherite house takes most of a night.
 4. **Anger** is per player. It rises when you hurt its minions, use wards, or wreck its builds. It fades slowly over days of quiet. Players never see a meter, only behavior changes.
 5. **Banishment:** it cannot be killed, but a ritual using hard-to-get items sends it away **forever**. This is the win condition.
 6. **(proposal)** The ritual is a late-game project: rare minion loot plus items from other dimensions or bosses, performed at a specific spot at midnight, when it's angry and close. Attempting it should be dangerous.
@@ -89,10 +89,16 @@ Notes:
 
 ## Set Pieces
 
+### Environmental scenes (approved first versions)
+- Watch it bridge a ravine in a perfectly straight line impossibly fast, then stop and face you.
+- It finishes a wall you started along a marked clean plane and leaves when approached.
+- See a temporary distant apparition of your base rebuilt properly. The first version copies an explicitly prepared reference design; automatic detection and improvement come later.
+- After tunneling, turn to find it 4–6 blocks behind you, arms at its sides. The first version uses a test command; automatic triggers come later.
+- Use marked areas and test commands for these prototypes. Real passive construction is allowed outside midnight/anger only while not attacking. It fills empty marked cells and protects existing blocks.
+
 ### Jump Scares
-- Rare, earned by long tension, with a cooldown after each.
-- Vary the triggers: mining alone, sleeping, looking at a crafting table.
-- Silence before, a sting, then silence again.
+- Remove the generic face overlay and scream.
+- Save big scares for a few occasions. Their design, triggers, and exact limits are undecided and deferred.
 
 ### Bed Theft
 - Happens once or twice per world.
@@ -119,7 +125,7 @@ Stolen gear ends up somewhere it built (a neat room, a hidden chest). Finding it
 Each step should be playable on its own.
 
 1. Stalking entity: appears, watches, vanishes, with its weird movement and sound
-2. Two effects (Hollow and Seen) and one jump scare
+2. Two effects (Hollow and Seen) and four environmental scenes; rare big jump scares deferred
 3. Theft from open chests
 4. Minions with basic loot
 5. Midnight and anger rules, with block breaking and building

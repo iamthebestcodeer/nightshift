@@ -23,6 +23,14 @@ loom {
 }
 
 fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "nightshift-gametest"
+        enableGameTests = false
+        enableClientGameTests = true
+        eula = false
+        clearRunDirectory = false
+    }
 	configureDataGeneration {
 		client = true
 		modId = "nightshift"
@@ -86,3 +94,19 @@ publishing {
 		// retrieving dependencies.
 	}
 }
+
+// Verify gameplay rules and save serialization without a game launch or test framework.
+tasks.register('gameplayRulesTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'nightshift.encounter.EncounterRulesTest'
+}
+check.dependsOn gameplayRulesTest
+
+// The dependency-free runner above executes these tests instead of a JUnit engine.
+tasks.named('test') {
+    failOnNoDiscoveredTests = false
+}
+
+// Keep the optional real-client test harness compiling during ordinary builds.
+check.dependsOn compileGametestJava

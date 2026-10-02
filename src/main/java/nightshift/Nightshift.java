@@ -12,6 +12,10 @@ public final class Nightshift implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        nightshift.entity.NightshiftEntities.initialize();
+        nightshift.effect.NightshiftEffects.initialize();
+        nightshift.encounter.EncounterDirector.initialize();
+        nightshift.command.NightshiftTestCommands.initialize();
         LOGGER.info("Initializing Nightshift");
     }
 

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "nightshift-gametest",
+  "version": "1.0.0",
+  "name": "Nightshift in-world tests",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": [
+      "nightshift.gametest.StalkingClientTest",
+      "nightshift.gametest.PresentationClientTest",
+      "nightshift.gametest.CommandClientTest",
+      "nightshift.gametest.EnvironmentalSceneClientTest"
+    ]
+  }
+}
