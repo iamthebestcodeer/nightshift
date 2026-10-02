@@ -1,6 +1,6 @@
 # Architecture and milestones
 
-The [design plan](../plans/horror-mod-design-plan.md) defines behavior. This document describes implementation boundaries, not additional gameplay decisions. Package scaffolding contains documentation only; no entities, effects, items, event handlers, or persistence are registered yet.
+The [design plan](../plans/horror-mod-design-plan.md) defines behavior. This document describes implementation boundaries, not additional gameplay decisions. The stationary Understudy checkpoint, operator debug commands, and UUID-keyed saved-state foundation are implemented. Encounter behavior, effects, and items remain unimplemented.
 
 ## Agreed stack
 
@@ -41,19 +41,21 @@ Keep work on the game tick bounded. Avoid scanning entire worlds or repeating ex
 
 The server owns encounters, saved state, and world changes. Clients display what the server authorizes. Keep world-wide progression and permanent banishment separate from per-player anger, effects, and theft/recovery records. Choose save formats and networking payloads when implementing the first feature that needs them, following the saved-state foundation above.
 
+`NightshiftSavedData` stores the world phase and a UUID-keyed map of immutable `PlayerState` records in the overworld's `data/nightshift/state.dat`. Every dimension retrieves that same save through the server. Records contain nonnegative integer anger and theft count plus a bed theft flag, with zero/false defaults. Mutations mark the save dirty; reads do not create records. Plain Java state and phase labels live in `nightshift.encounter`; codecs and Minecraft storage access live in `nightshift.world`. Phase changes currently affect saved labels only, with no automatic progression or banishment behavior.
+
 Centralize block-edit eligibility when implementing sieges: The Understudy may place or break only at midnight and only when angry at its target. Minion wall breaking needs its own explicit rules; minions cannot build or bridge. Do not silently treat these as the same actor.
 
 ## Build order
 
 Start with the following sequence, then continue the design plan's build order. Keep each milestone playable before moving to the next.
 
-1. Generate the official template, open it in IntelliJ IDEA 2025.3 or newer, and run `./gradlew runClient`. The template is present and builds; IntelliJ and client launch have not yet been verified.
-2. Register The Understudy as an entity that simply stands there.
+1. Generate the official template, open it in IntelliJ IDEA 2025.3 or newer, and run `./gradlew runClient`. The template is present and builds; the client has launched through the client game test. IntelliJ setup remains unverified.
+2. Register The Understudy as an entity that simply stands there. Implemented with a classic player model and an original fixed skin with pale coloring and uneven eyes; copying player skins remains undecided.
 3. Add watch-and-vanish behavior, with AI reading saved state as stateful behavior is introduced.
 4. Add Hollow and Seen, plus one jump scare.
 5. Continue with theft and the remaining milestones below.
 
-The gameplay milestones below are all unimplemented. The stationary entity is the first checkpoint within step 1.
+The full gameplay milestones below remain unimplemented. The stationary entity (build-order step 2) is the implemented first checkpoint within milestone step 1.
 
 | Step | Deliverable | Manual verification focus |
 | --- | --- | --- |
@@ -75,6 +77,6 @@ Ask the project owner whenever a requirement is unclear. The plan does not yet s
 - Midnight window, anger thresholds/decay, phase timing, encounter frequency, and cooldowns.
 - What an “open” container means and how recoverable stolen items are assigned.
 - Effect durations/stacks/tells, minion stats/drops, and enclosure dimensions/material scoring.
-- Rendering, skin, sounds, and art assets needed for the first playable milestone.
+- Movement presentation, sounds, and additional art assets needed for the stalking milestone.
 
 Do not invent these values during setup or interpret proposals as accepted decisions.

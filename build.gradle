@@ -23,6 +23,12 @@ loom {
 }
 
 fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "nightshift-test"
+		enableGameTests = false
+		enableClientGameTests = true
+	}
 	configureDataGeneration {
 		client = true
 		modId = "nightshift"
@@ -36,6 +42,7 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
 }
 
 processResources {
@@ -49,6 +56,15 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.release = 25
+	it.options.compilerArgs += ['-Xlint:all', '-Werror']
+}
+
+test {
+	useJUnitPlatform()
+}
+
+check {
+	dependsOn gametestClasses
 }
 
 java {
