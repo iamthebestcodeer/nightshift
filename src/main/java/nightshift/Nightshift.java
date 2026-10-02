@@ -2,6 +2,8 @@ package nightshift;
 
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.Identifier;
+import nightshift.command.NightshiftCommands;
+import nightshift.entity.NightshiftEntities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +14,8 @@ public final class Nightshift implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        NightshiftEntities.register();
+        NightshiftCommands.register();
         LOGGER.info("Initializing Nightshift");
     }
 

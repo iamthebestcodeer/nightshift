@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "nightshift-test",
+  "version": "1.0.0",
+  "name": "Nightshift Tests",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": ["nightshift.NightshiftClientGameTest"]
+  }
+}
