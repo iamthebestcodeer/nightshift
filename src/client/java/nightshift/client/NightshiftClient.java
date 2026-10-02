@@ -7,6 +7,7 @@ import nightshift.client.render.UnderstudyRenderer;
 import nightshift.entity.NightshiftEntities;
 
 public final class NightshiftClient implements ClientModInitializer {
+    /** Registers encounter renderers and the client audio lifecycle hooks. */
     @Override public void onInitializeClient() {
         EntityRenderers.register(NightshiftEntities.UNDERSTUDY, UnderstudyRenderer::new);
         EntityRenderers.register(NightshiftEntities.APPARITION, nightshift.client.render.ApparitionRenderer::new);

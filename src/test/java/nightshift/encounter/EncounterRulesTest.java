@@ -2,6 +2,7 @@ package nightshift.encounter;
 
 /** Boundary checks run by Gradle without an added testing dependency. */
 public final class EncounterRulesTest {
+    /** Runs encounter timing and visibility boundaries, scene rules, and saved-deadline regression checks. */
     public static void main(String[] args) {
         check(EncounterRules.encounterDelay(false, 0) == 3600, "ordinary minimum gap");
         check(EncounterRules.encounterDelay(false, Math.nextDown(1.0)) < 6000, "ordinary maximum gap");
@@ -19,6 +20,7 @@ public final class EncounterRulesTest {
         System.out.println("Encounter rule boundary checks passed");
     }
 
+    /** Throws an assertion failure with the supplied message when the tested condition is false. */
     private static void check(boolean passed, String message) {
         if (!passed) throw new AssertionError(message);
     }

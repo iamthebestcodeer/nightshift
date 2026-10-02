@@ -12,8 +12,14 @@ public final class SceneRules {
 
     private SceneRules() {}
 
+    /** Allows the passive construction exception only while the actor is not attacking. */
     public static boolean mayBuild(boolean attacking) { return !attacking; }
 
+    /**
+     * Returns an immutable, inclusive horizontal line in endpoint travel order.
+     *
+     * @throws IllegalArgumentException if the endpoints are not cardinal and level, or the line exceeds 64 cells
+     */
     public static List<Cell> bridge(Cell from, Cell to) {
         if (from.y != to.y || (from.x != to.x && from.z != to.z)) {
             throw new IllegalArgumentException("Bridge endpoints must form a horizontal, straight line.");
@@ -26,6 +32,11 @@ public final class SceneRules {
         return List.copyOf(cells);
     }
 
+    /**
+     * Returns the inclusive cells of a vertical rectangle, ordered by ascending y, x, then z.
+     *
+     * @throws IllegalArgumentException if the corners are not in one vertical plane, or exceed 32 cells wide or 16 high
+     */
     public static List<Cell> wall(Cell from, Cell to) {
         if (from.x != to.x && from.z != to.z) throw new IllegalArgumentException("Wall corners must lie in one vertical plane.");
         if (Math.abs((long) from.y - to.y) >= 16) throw new IllegalArgumentException("Wall height is limited to 16 blocks.");
@@ -34,6 +45,13 @@ public final class SceneRules {
         return region(from, to, MAX_PLACEMENTS);
     }
 
+    /**
+     * Returns an immutable, inclusive cuboid ordered by ascending y, x, then z.
+     * Checks dimensions before multiplying to avoid overflow for extreme coordinates.
+     *
+     * @param limit maximum permitted number of cells
+     * @throws IllegalArgumentException if the limit is nonpositive or the cuboid exceeds it
+     */
     public static List<Cell> region(Cell from, Cell to, int limit) {
         long widthLong = Math.abs((long) from.x - to.x) + 1;
         long heightLong = Math.abs((long) from.y - to.y) + 1;

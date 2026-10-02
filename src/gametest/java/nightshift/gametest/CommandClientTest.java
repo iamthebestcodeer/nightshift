@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.worldselection.WorldCreationUiState;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 
 public final class CommandClientTest implements FabricClientGameTest {
+    /** Checks operator permissions, watch replacement, effects, and clear commands in an isolated client world. */
     @Override public void runTest(ClientGameTestContext context) {
         try (var world = context.worldBuilder().adjustSettings(settings -> {
             settings.setGameMode(WorldCreationUiState.SelectedGameMode.CREATIVE);
@@ -54,6 +55,7 @@ public final class CommandClientTest implements FabricClientGameTest {
         }
     }
 
+    /** Drives the client camera through watched freezing, unseen movement, and quiet short and long look-backs. */
     private static void verifyLookBackSequence(ClientGameTestContext context, TestSingleplayerContext world) {
         int entityId = world.getServer().computeOnServer(server -> {
             var player = server.getPlayerList().getPlayers().getFirst();
@@ -94,10 +96,12 @@ public final class CommandClientTest implements FabricClientGameTest {
         Nightshift.LOGGER.info("In-world regression: watch command, client freeze/movement, and quiet look-back passed");
     }
 
+    /** Runs a test action on the server thread and requires a successful command result. */
     private static void command(TestSingleplayerContext world, String action) {
         world.getServer().runOnServer(server -> check(execute(server, action) == 1, "command succeeds: " + action));
     }
 
+    /** Executes a Nightshift test action as the first player with operator permission; syntax errors fail the test. */
     private static int execute(net.minecraft.server.MinecraftServer server, String action) {
         var player = server.getPlayerList().getPlayers().getFirst();
         try {
@@ -106,6 +110,7 @@ public final class CommandClientTest implements FabricClientGameTest {
         } catch (CommandSyntaxException exception) { throw new AssertionError(exception); }
     }
 
+    /** Throws an assertion failure with the supplied message when the tested condition is false. */
     private static void check(boolean result, String message) {
         if (!result) throw new AssertionError(message);
     }

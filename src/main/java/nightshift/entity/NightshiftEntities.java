@@ -22,6 +22,7 @@ public final class NightshiftEntities {
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, Nightshift.id("apparition"))));
 
     private NightshiftEntities() {}
+    /** Triggers entity type registration and supplies the Understudy's default mob attributes. */
     public static void initialize() {
         FabricDefaultAttributeRegistry.register(UNDERSTUDY, Mob.createMobAttributes());
     }

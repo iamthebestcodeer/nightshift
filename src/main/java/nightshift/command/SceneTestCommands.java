@@ -15,12 +15,14 @@ import net.minecraft.network.chat.Component;
 final class SceneTestCommands {
     private SceneTestCommands() {}
 
+    /** Builds the bridge or wall command branch with loaded endpoints and a block-state argument. */
     static LiteralArgumentBuilder<CommandSourceStack> construction(String name, CommandBuildContext registry) {
         return Commands.literal(name).then(Commands.argument("from", BlockPosArgument.blockPos())
                 .then(Commands.argument("to", BlockPosArgument.blockPos())
                         .then(Commands.argument("block", BlockStateArgument.block(registry)).executes(context -> build(context, name)))));
     }
 
+    /** Builds the tunnel command branch, reporting scene validation failures to the player. */
     static LiteralArgumentBuilder<CommandSourceStack> tunnel() {
         return Commands.literal("tunnel").executes(context -> {
             var player = context.getSource().getPlayerOrException();
@@ -31,6 +33,7 @@ final class SceneTestCommands {
         });
     }
 
+    /** Builds the marked replica command branch, reporting scene validation failures to the player. */
     static LiteralArgumentBuilder<CommandSourceStack> replica() {
         return Commands.literal("replica").then(Commands.argument("from", BlockPosArgument.blockPos())
                 .then(Commands.argument("to", BlockPosArgument.blockPos())
@@ -44,6 +47,7 @@ final class SceneTestCommands {
                         }))));
     }
 
+    /** Validates bridge or wall geometry and starts construction; reports invalid scenes with a zero result. */
     private static int build(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
         var player = context.getSource().getPlayerOrException();
         try {
@@ -55,11 +59,13 @@ final class SceneTestCommands {
         } catch (IllegalArgumentException exception) { return failure(context.getSource(), exception); }
     }
 
+    /** Sends a scene success message without broadcasting and returns one. */
     private static int success(CommandSourceStack source, String text) {
         source.sendSuccess(() -> Component.literal(text), false);
         return 1;
     }
 
+    /** Reports a scene validation exception to the command source and returns zero. */
     private static int failure(CommandSourceStack source, IllegalArgumentException exception) {
         source.sendFailure(Component.literal(exception.getMessage()));
         return 0;

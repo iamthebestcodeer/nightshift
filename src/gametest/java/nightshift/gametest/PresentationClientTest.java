@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 
 /** Real rendering/audio/resource-reload and dimension checks in a separate world. */
 public final class PresentationClientTest implements FabricClientGameTest {
+    /** Checks effect icons, actual audio gains and reloads, independent head turns, and dimension cleanup in a client world. */
     @Override public void runTest(ClientGameTestContext context) {
         try (var world = context.worldBuilder().adjustSettings(settings -> {
             settings.setGameMode(WorldCreationUiState.SelectedGameMode.CREATIVE);
@@ -108,6 +109,7 @@ public final class PresentationClientTest implements FabricClientGameTest {
         context.waitFor(client -> value("worldGain", Float.class) == 1, 20);
     }
 
+    /** Reads the sound engine's actual category gain via reflection, failing the test if the field is unavailable. */
     private static float engineGain(net.minecraft.client.Minecraft client, SoundSource source) {
         try {
             Field engineField = client.getSoundManager().getClass().getDeclaredField("soundEngine");
@@ -121,6 +123,7 @@ public final class PresentationClientTest implements FabricClientGameTest {
         } catch (ReflectiveOperationException exception) { throw new AssertionError(exception); }
     }
 
+    /** Reads a named static presentation field via reflection and casts it to the expected test type. */
     private static <T> T value(String name, Class<T> type) {
         try {
             Field field = EncounterPresentation.class.getDeclaredField(name);
@@ -129,9 +132,11 @@ public final class PresentationClientTest implements FabricClientGameTest {
         } catch (ReflectiveOperationException exception) { throw new AssertionError(exception); }
     }
 
+    /** Throws an assertion failure with the supplied message when the tested condition is false. */
     private static void check(boolean result, String message) {
         if (!result) throw new AssertionError(message);
     }
 
+    /** Writes a labeled progress message to the in-world test log. */
     private static void log(String message) { Nightshift.LOGGER.info("In-world presentation test: {}", message); }
 }

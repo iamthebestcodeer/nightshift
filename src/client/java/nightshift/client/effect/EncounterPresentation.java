@@ -22,6 +22,7 @@ public final class EncounterPresentation {
 
     private EncounterPresentation() {}
 
+    /** Registers audio ticks and invalidates cached gain after sound resources reload. */
     public static void initialize() {
         var resources = ResourceLoader.get(PackType.CLIENT_RESOURCES);
         var audioReload = Nightshift.id("encounter_audio");
@@ -30,6 +31,7 @@ public final class EncounterPresentation {
         ClientTickEvents.END_CLIENT_TICK.register(EncounterPresentation::tick);
     }
 
+    /** Updates Hollow gain and effect cues, restoring audio when the client leaves a world. */
     private static void tick(Minecraft client) {
         if (client.player == null || client.level == null) {
             stopCues(client);
@@ -67,14 +69,17 @@ public final class EncounterPresentation {
         } else heartbeatTicks = 0;
     }
 
+    /** Stops the tracked phantom and heartbeat sounds and clears their references. */
     private static void stopCues(Minecraft client) {
         if (phantom != null) client.getSoundManager().stop(phantom);
         if (heartbeat != null) client.getSoundManager().stop(heartbeat);
         phantom = heartbeat = null;
     }
 
+    /** Forces the next client tick to reapply category gain after an audio reset. */
     public static void invalidateGain() { worldGain = Float.NaN; }
 
+    /** Updates world sound categories only when gain changes, leaving master and UI gain untouched. */
     private static void applyGain(Minecraft client, float gain) {
         if (worldGain == gain) return;
         worldGain = gain;

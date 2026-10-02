@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /** stopAll resets category gains during both world changes and sound-device reloads. */
 @Mixin(SoundEngine.class)
 abstract class SoundEngineMixin {
+    /** Invalidates cached encounter gain after the sound engine resets its category gains. */
     @Inject(method = "stopAll", at = @At("RETURN"))
     private void nightshift$invalidateGain(CallbackInfo callback) {
         EncounterPresentation.invalidateGain();

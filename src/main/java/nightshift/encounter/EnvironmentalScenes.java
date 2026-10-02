@@ -23,6 +23,11 @@ public final class EnvironmentalScenes {
 
     private EnvironmentalScenes() {}
 
+    /**
+     * Starts passive construction over marked cells, replacing the player's nearby actor.
+     *
+     * @throws IllegalArgumentException if the player, cells, material, or builder clearance is invalid
+     */
     public static void construct(ServerPlayer player, List<SceneRules.Cell> cells, BlockState material) {
         requirePlayer(player);
         ServerLevel world = player.level();
@@ -41,6 +46,11 @@ public final class EnvironmentalScenes {
         world.addFreshEntity(actor);
     }
 
+    /**
+     * Places a stationary encounter in supported space 4–6 blocks behind the player.
+     *
+     * @throws IllegalArgumentException if the player is ineligible, looking vertically, or has no suitable space behind them
+     */
     public static void tunnel(ServerPlayer player) {
         requirePlayer(player);
         ServerLevel world = player.level();
@@ -61,6 +71,13 @@ public final class EnvironmentalScenes {
         throw new IllegalArgumentException("No clear, supported space 4–6 blocks behind you.");
     }
 
+    /**
+     * Copies marked block states into a temporary apparition anchored to its first visible block.
+     * The destination is the minimum corner of the copy; world blocks and block-entity data are not copied into the world.
+     *
+     * @throws IllegalArgumentException if the player or positions are invalid, the reference is empty,
+     *     or the reference volume or visible shape count exceeds the scene limits
+     */
     public static void replica(ServerPlayer player, BlockPos from, BlockPos to, BlockPos destination) {
         requirePlayer(player);
         ServerLevel world = player.level();
@@ -91,17 +108,21 @@ public final class EnvironmentalScenes {
         world.addFreshEntity(ghost);
     }
 
+    /** Converts a Minecraft block position to the plain coordinate type used by scene geometry rules. */
     public static SceneRules.Cell cell(BlockPos position) { return new SceneRules.Cell(position.getX(), position.getY(), position.getZ()); }
 
+    /** Rejects dead players and spectators before starting an environmental scene. */
     private static void requirePlayer(ServerPlayer player) {
         if (!player.isAlive() || player.isSpectator()) throw new IllegalArgumentException("Use a living player outside spectator mode.");
     }
 
+    /** Discards the player's owned actors within the search box extending 128 blocks around them. */
     private static void removeActors(ServerPlayer player) {
         player.level().getEntitiesOfClass(Understudy.class, player.getBoundingBox().inflate(128),
                 actor -> actor.isWatching(player.getUUID())).forEach(Understudy::discard);
     }
 
+    /** Rejects any scene cell outside loaded chunks, world bounds, or a 96-block radius of the player. */
     private static void validate(ServerLevel world, ServerPlayer player, List<BlockPos> positions) {
         for (var position : positions) {
             if (!world.getChunkSource().hasChunk(position.getX() >> 4, position.getZ() >> 4) || !world.getWorldBorder().isWithinBounds(position)

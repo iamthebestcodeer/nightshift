@@ -20,6 +20,7 @@ import net.minecraft.world.phys.Vec3;
 
 /** Drives a real client and integrated server in an isolated, flat test world. */
 public final class StalkingClientTest implements FabricClientGameTest {
+    /** Checks natural encounter scheduling, stalking, effect expiry, and saved deadlines through a real world reopen. */
     @Override public void runTest(ClientGameTestContext context) {
         TestWorldSave save;
         EncounterSavedData.Deadlines saved;
@@ -93,15 +94,18 @@ public final class StalkingClientTest implements FabricClientGameTest {
         log("ALL CLIENT-WORLD CHECKS PASSED");
     }
 
+    /** Returns Understudies inside the flat test fixture's bounded overworld search area. */
     private static java.util.List<Understudy> entities(MinecraftServer server) {
         return server.overworld().getEntitiesOfClass(Understudy.class, new AABB(-100, -70, -100, 100, 0, 100));
     }
 
+    /** Reads the first server player's persisted encounter deadlines on the server thread. */
     private static EncounterSavedData.Deadlines deadlines(TestSingleplayerContext world) {
         return world.getServer().computeOnServer(server -> server.getDataStorage().computeIfAbsent(EncounterSavedData.TYPE)
                 .get(server.getPlayerList().getPlayers().getFirst().getUUID()));
     }
 
+    /** Waits up to the supplied server tick limit for a sighting and its client entity updates, then returns its UUID. */
     private static UUID waitForEncounter(ClientGameTestContext context, TestSingleplayerContext world, int ticks) {
         world.getServer().waitFor(server -> !entities(server).isEmpty(), ticks);
         UUID id = world.getServer().computeOnServer(server -> entities(server).getFirst().getUUID());
@@ -109,6 +113,7 @@ public final class StalkingClientTest implements FabricClientGameTest {
         return id;
     }
 
+    /** Reads an entity's server position, returning {@code null} after it disappears. */
     private static Vec3 position(TestSingleplayerContext world, UUID entity) {
         return world.getServer().computeOnServer(server -> {
             var found = server.overworld().getEntity(entity);
@@ -116,6 +121,7 @@ public final class StalkingClientTest implements FabricClientGameTest {
         });
     }
 
+    /** Aims the client camera near the encounter's head and waits for the view update to reach the server. */
     private static void lookAt(ClientGameTestContext context, TestSingleplayerContext world, UUID entity) {
         var position = position(world, entity);
         check(position != null, "entity exists before looking at it");
@@ -124,17 +130,20 @@ public final class StalkingClientTest implements FabricClientGameTest {
         world.getConnection().waitForServerboundPackets();
     }
 
+    /** Turns the client camera 180 degrees from its current yaw and waits five ticks. */
     private static void lookAway(ClientGameTestContext context) {
         float yaw = context.computeOnClient(client -> client.player.getYRot());
         context.getInput().lookAt(yaw + 180, 0);
         context.waitTicks(5);
     }
 
+    /** Teleports the test player back to the flat-world starting position and waits for updates. */
     private static void resetPosition(ClientGameTestContext context, TestSingleplayerContext world) {
         world.getServer().runCommand("tp @a 0.5 -60 0.5");
         context.waitTicks(10);
     }
 
+    /** Removes current fixture actors and makes the first player's encounter due while preserving the legacy scare deadline. */
     private static void forceEncounter(TestSingleplayerContext world) {
         world.getServer().runOnServer(server -> {
             for (var entity : entities(server)) entity.discard();
@@ -146,6 +155,7 @@ public final class StalkingClientTest implements FabricClientGameTest {
         });
     }
 
+    /** Reads a named static presentation field via reflection and casts it to the expected test type. */
     private static <T> T value(String name, Class<T> type) {
         try {
             Field field = EncounterPresentation.class.getDeclaredField(name);
@@ -154,9 +164,11 @@ public final class StalkingClientTest implements FabricClientGameTest {
         } catch (ReflectiveOperationException exception) { throw new AssertionError(exception); }
     }
 
+    /** Throws an assertion failure with the supplied message when the tested condition is false. */
     private static void check(boolean result, String message) {
         if (!result) throw new AssertionError(message);
     }
 
+    /** Writes a labeled progress message to the in-world test log. */
     private static void log(String message) { Nightshift.LOGGER.info("In-world test: {}", message); }
 }

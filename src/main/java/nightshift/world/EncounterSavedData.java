@@ -25,12 +25,16 @@ public final class EncounterSavedData extends SavedData {
             Nightshift.id("encounters"), EncounterSavedData::new, CODEC, null);
     private final Map<String, Deadlines> players;
 
+    /** Creates an empty encounter schedule without marking it dirty. */
     public EncounterSavedData() { this(Map.of()); }
 
+    /** Copies decoded player deadlines into mutable storage without marking the loaded save dirty. */
     private EncounterSavedData(Map<String, Deadlines> players) { this.players = new HashMap<>(players); }
 
+    /** Returns a player's deadlines, or {@code null} if absent, without creating a record. */
     public Deadlines get(UUID player) { return players.get(player.toString()); }
 
+    /** Stores absolute overworld-tick deadlines for one player, retaining the supplied legacy scare value, and marks the save dirty. */
     public void set(UUID player, long encounter, long scare) {
         players.put(player.toString(), new Deadlines(encounter, scare));
         setDirty();

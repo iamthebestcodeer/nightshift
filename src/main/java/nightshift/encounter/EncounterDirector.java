@@ -13,10 +13,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 public final class EncounterDirector {
     private EncounterDirector() {}
 
+    /** Registers the encounter scheduler at the end of each server tick. */
     public static void initialize() {
         ServerTickEvents.END_SERVER_TICK.register(EncounterDirector::tick);
     }
 
+    /** Checks eligible players once per second, persisting calm gaps and retrying failed spawns after 20 seconds. */
     private static void tick(MinecraftServer server) {
         long now = server.overworld().getGameTime();
         if (now % 20 != 0) return;
@@ -54,8 +56,10 @@ public final class EncounterDirector {
         return true;
     }
 
+    /** Attempts a sighting at a random angle around the player and reports whether it was added. */
     private static boolean spawn(ServerPlayer player) { return spawn(player, false); }
 
+    /** Tries at most eight loaded surface positions with clearance and support; {@code ahead} biases the search toward the player's view. */
     private static boolean spawn(ServerPlayer player, boolean ahead) {
         ServerLevel world = player.level();
         for (int attempt = 0; attempt < 8; attempt++) {

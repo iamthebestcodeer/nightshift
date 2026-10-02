@@ -10,6 +10,7 @@ public final class Nightshift implements ModInitializer {
     public static final String MOD_ID = "nightshift";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+    /** Registers common entities, effects, commands, and the server encounter scheduler. */
     @Override
     public void onInitialize() {
         nightshift.entity.NightshiftEntities.initialize();

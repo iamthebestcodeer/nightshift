@@ -22,14 +22,18 @@ public final class ApparitionRenderer extends EntityRenderer<Apparition, Apparit
     private record Cached(List<Apparition.GhostBlock> blocks, List<Shape> shapes) {}
     private final java.util.Map<Apparition, Cached> cache = new java.util.WeakHashMap<>();
 
+    /** Creates a renderer that resolves apparition shapes through the client block model resolver. */
     public ApparitionRenderer(EntityRendererProvider.Context context) {
         super(context);
         models = context.getBlockModelResolver();
     }
 
+    /** Creates an empty shape snapshot for one apparition render state. */
     @Override public State createRenderState() { return new State(); }
+    /** Disables origin-box culling because apparition geometry can extend far beyond that box. */
     @Override protected boolean affectedByCulling(Apparition entity) { return false; }
 
+    /** Resolves block models when the immutable shape snapshot changes and reuses cached models otherwise. */
     @Override public void extractRenderState(Apparition entity, State state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
         // Resolve immutable block models only when a different shape snapshot is encountered.
@@ -47,6 +51,7 @@ public final class ApparitionRenderer extends EntityRenderer<Apparition, Apparit
         state.shapes = cached.shapes;
     }
 
+    /** Submits each ghost block model at its relative offset with the entity lighting. */
     @Override public void submit(State state, PoseStack poses, SubmitNodeCollector collector, CameraRenderState camera) {
         for (var shape : state.shapes) {
             poses.pushPose();

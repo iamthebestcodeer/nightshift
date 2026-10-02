@@ -3,6 +3,7 @@ package nightshift.encounter;
 import nightshift.encounter.SceneRules.Cell;
 
 final class SceneRulesTest {
+    /** Checks scene geometry limits, endpoint ordering, extreme coordinates, and attack eligibility. */
     static void verify() {
         var reverse = SceneRules.bridge(new Cell(3, 0, 0), new Cell(-3, 0, 0));
         check(reverse.size() == 7 && reverse.getLast().x() == -3, "reverse bridge preserves travel direction");
@@ -19,10 +20,12 @@ final class SceneRulesTest {
         reject(() -> SceneRules.region(new Cell(Integer.MIN_VALUE, 0, 0), new Cell(Integer.MAX_VALUE, 0, 0), 4096));
         check(SceneRules.mayBuild(false) && !SceneRules.mayBuild(true), "passive exception stops on attack");
     }
+    /** Requires the action to throw {@link IllegalArgumentException}; fails if invalid geometry is accepted. */
     private static void reject(Runnable action) {
         try { action.run(); } catch (IllegalArgumentException expected) { return; }
         throw new AssertionError("invalid scene accepted");
     }
+    /** Throws an assertion failure with the supplied message when the tested condition is false. */
     private static void check(boolean passed, String message) {
         if (!passed) throw new AssertionError(message);
     }

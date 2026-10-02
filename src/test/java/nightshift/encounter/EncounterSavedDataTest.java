@@ -7,6 +7,7 @@ import nightshift.world.EncounterSavedData;
 public final class EncounterSavedDataTest {
     private EncounterSavedDataTest() {}
 
+    /** Checks codec round-trip, dirty tracking, and isolation of two players' encounter and legacy scare deadlines. */
     public static void verify() {
         UUID first = UUID.fromString("00000000-0000-0000-0000-000000000001");
         UUID second = UUID.fromString("00000000-0000-0000-0000-000000000002");

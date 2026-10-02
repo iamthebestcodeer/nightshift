@@ -16,6 +16,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 public final class NightshiftTestCommands {
     private NightshiftTestCommands() {}
 
+    /** Registers the operator-only encounter and scene test commands under {@code /nightshift test}. */
     public static void initialize() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) -> dispatcher.register(
                 Commands.literal("nightshift")
@@ -31,6 +32,7 @@ public final class NightshiftTestCommands {
                                 .then(Commands.literal("clear").executes(context -> clear(context.getSource()))))));
     }
 
+    /** Replaces the living command player's nearby sighting with one ahead; returns zero if placement fails. */
     private static int watch(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         if (!player.isAlive() || player.isSpectator()) {
@@ -45,6 +47,7 @@ public final class NightshiftTestCommands {
         return reply(source, "Sighting ahead. It moves while unseen and leaves when approached or after 30 seconds.");
     }
 
+    /** Replaces the command player's Hollow and Seen effects with fresh, unstacked durations. */
     private static int effects(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         player.removeEffect(NightshiftEffects.HOLLOW);
@@ -54,6 +57,7 @@ public final class NightshiftTestCommands {
         return reply(source, "Hollow: 30 seconds. Seen: 90 seconds.");
     }
 
+    /** Removes the command player's nearby encounters and effects while retaining constructed blocks. */
     private static int clear(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         removeSightings(player);
@@ -64,11 +68,13 @@ public final class NightshiftTestCommands {
         return reply(source, "Your nearby encounters, apparitions, Hollow, and Seen cleared. Construction blocks remain.");
     }
 
+    /** Discards this player's owned Understudies within the search box extending 96 blocks around them. */
     private static void removeSightings(ServerPlayer player) {
         player.level().getEntitiesOfClass(Understudy.class, player.getBoundingBox().inflate(96),
                 entity -> entity.isWatching(player.getUUID())).forEach(Understudy::discard);
     }
 
+    /** Sends a success message to the command source without broadcasting and returns one. */
     private static int reply(CommandSourceStack source, String text) {
         source.sendSuccess(() -> Component.literal(text), false);
         return 1;

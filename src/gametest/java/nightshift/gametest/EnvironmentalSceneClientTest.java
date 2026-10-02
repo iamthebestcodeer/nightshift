@@ -14,6 +14,7 @@ import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.level.block.Blocks;
 
 public final class EnvironmentalSceneClientTest implements FabricClientGameTest {
+    /** Exercises all four scenes, including construction preservation, replica lifetime and approach cleanup, and unsupported spawn rejection. */
     @Override public void runTest(ClientGameTestContext context) {
         try (var world = context.worldBuilder().adjustSettings(settings -> {
             settings.setGameMode(WorldCreationUiState.SelectedGameMode.CREATIVE);
@@ -118,6 +119,7 @@ public final class EnvironmentalSceneClientTest implements FabricClientGameTest 
             Nightshift.LOGGER.info("In-world environmental scenes: bridge, wall, attack cancellation, replica sync/no edits/timeout, tunnel and approach passed");
         }
     }
+    /** Checks unsafe materials, retreat-before-edit, occupied-cell retries, body clearance, and long or sparse replicas. */
     private static void verifyConstructionRegressions(ClientGameTestContext context, TestSingleplayerContext world) {
         world.getServer().runCommand("setblock -5 -60 25 redstone_block");
         world.getServer().runOnServer(server -> {
@@ -199,18 +201,22 @@ public final class EnvironmentalSceneClientTest implements FabricClientGameTest 
         Nightshift.LOGGER.info("Construction regressions: destructive materials rejected, spawn/movement clearance and long replica passed");
     }
 
+    /** Returns the first Understudy in the search box extending 96 blocks around the first server player. */
     private static Understudy actor(MinecraftServer server) {
         var player = server.getPlayerList().getPlayers().getFirst();
         return player.level().getEntitiesOfClass(Understudy.class, player.getBoundingBox().inflate(96)).getFirst();
     }
+    /** Runs a test action on the server thread and requires a successful command result. */
     private static void command(TestSingleplayerContext world, String action) {
         world.getServer().runOnServer(server -> check(execute(server, action) == 1, "command succeeds: " + action));
     }
+    /** Executes a Nightshift test action as the first player with operator permission; syntax errors fail the test. */
     private static int execute(MinecraftServer server, String action) {
         try {
             return server.getCommands().getDispatcher().execute("nightshift test " + action,
                     server.getPlayerList().getPlayers().getFirst().createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER));
         } catch (CommandSyntaxException exception) { throw new AssertionError(exception); }
     }
+    /** Throws an assertion failure with the supplied message when the tested condition is false. */
     private static void check(boolean result, String message) { if (!result) throw new AssertionError(message); }
 }
