@@ -55,7 +55,7 @@ Start with the following sequence, then continue the design plan's build order. 
 4. Add Hollow and Seen, plus one jump scare.
 5. Continue with theft and the remaining milestones below.
 
-The full gameplay milestones below remain unimplemented. The stationary entity is the implemented first checkpoint within step 1.
+The full gameplay milestones below remain unimplemented. The stationary entity (build-order step 2) is the implemented first checkpoint within milestone step 1.
 
 | Step | Deliverable | Manual verification focus |
 | --- | --- | --- |
