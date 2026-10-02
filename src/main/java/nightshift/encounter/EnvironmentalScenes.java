@@ -25,7 +25,7 @@ public final class EnvironmentalScenes {
 
     public static void construct(ServerPlayer player, List<SceneRules.Cell> cells, BlockState material) {
         requirePlayer(player);
-        ServerLevel world = (ServerLevel) player.level();
+        ServerLevel world = player.level();
         var positions = cells.stream().map(cell -> new BlockPos(cell.x(), cell.y(), cell.z())).toList();
         validate(world, player, positions);
         if (!MATERIALS.contains(material.getBlock())) {
@@ -43,14 +43,14 @@ public final class EnvironmentalScenes {
 
     public static void tunnel(ServerPlayer player) {
         requirePlayer(player);
-        ServerLevel world = (ServerLevel) player.level();
+        ServerLevel world = player.level();
         Vec3 back = player.getLookAngle().multiply(1, 0, 1).normalize().scale(-1);
         if (back.lengthSqr() < 0.5) throw new IllegalArgumentException("Look along the tunnel rather than straight up or down.");
         for (int distance = 4; distance <= 6; distance++) {
             Vec3 position = player.position().add(back.scale(distance));
             Understudy actor = new Understudy(NightshiftEntities.UNDERSTUDY, world);
             actor.setPos(position);
-            if (!world.hasChunkAt(actor.blockPosition()) || !world.getWorldBorder().isWithinBounds(actor.blockPosition())
+            if (!world.getChunkSource().hasChunk(actor.getBlockX() >> 4, actor.getBlockZ() >> 4) || !world.getWorldBorder().isWithinBounds(actor.blockPosition())
                     || !world.noCollision(actor) || world.containsAnyLiquid(actor.getBoundingBox())
                     || world.noCollision(actor, actor.getBoundingBox().move(0, -0.2, 0))) continue;
             actor.quietScene(player, 2);
@@ -63,7 +63,7 @@ public final class EnvironmentalScenes {
 
     public static void replica(ServerPlayer player, BlockPos from, BlockPos to, BlockPos destination) {
         requirePlayer(player);
-        ServerLevel world = (ServerLevel) player.level();
+        ServerLevel world = player.level();
         var cells = SceneRules.region(cell(from), cell(to), SceneRules.MAX_COPY_VOLUME);
         var source = cells.stream().map(cell -> new BlockPos(cell.x(), cell.y(), cell.z())).toList();
         validate(world, player, source);
@@ -104,7 +104,7 @@ public final class EnvironmentalScenes {
 
     private static void validate(ServerLevel world, ServerPlayer player, List<BlockPos> positions) {
         for (var position : positions) {
-            if (!world.hasChunkAt(position) || !world.getWorldBorder().isWithinBounds(position)
+            if (!world.getChunkSource().hasChunk(position.getX() >> 4, position.getZ() >> 4) || !world.getWorldBorder().isWithinBounds(position)
                     || position.getY() < world.getMinY() || position.getY() > world.getMaxY()
                     || position.distToCenterSqr(player.getX(), player.getY(), player.getZ()) > 96 * 96) {
                 throw new IllegalArgumentException("Scene cells must be inside loaded world bounds and within 96 blocks of you.");

@@ -27,7 +27,7 @@ public final class PassiveConstruction {
         var box = actor.getBoundingBox().move(position.subtract(actor.position()));
         var bottom = BlockPos.containing(box.minX, box.minY, box.minZ);
         var top = BlockPos.containing(box.maxX, box.maxY, box.maxZ);
-        return world.hasChunkAt(bottom) && world.hasChunkAt(top)
+        return world.getChunkSource().hasChunk(bottom.getX() >> 4, bottom.getZ() >> 4) && world.getChunkSource().hasChunk(top.getX() >> 4, top.getZ() >> 4)
                 && world.getWorldBorder().isWithinBounds(box) && box.minY >= world.getMinY() && box.maxY <= world.getMaxY() + 1
                 && world.noCollision(actor, box) && !world.containsAnyLiquid(box);
     }
@@ -39,7 +39,7 @@ public final class PassiveConstruction {
         }
         for (int budget = 0; budget < SceneRules.BLOCKS_PER_TICK && !pending.isEmpty(); budget++) {
             BlockPos position = pending.removeFirst();
-            if (!world.hasChunkAt(position) || !world.getWorldBorder().isWithinBounds(position)
+            if (!world.getChunkSource().hasChunk(position.getX() >> 4, position.getZ() >> 4) || !world.getWorldBorder().isWithinBounds(position)
                     || !world.getBlockState(position).isAir()) continue;
             if (!world.getEntities(actor, new AABB(position)).isEmpty()) {
                 pending.addLast(position);

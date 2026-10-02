@@ -24,6 +24,8 @@ public final class Understudy extends Mob {
 
     public Understudy(EntityType<? extends Understudy> type, Level level) {
         super(type, level);
+        setPersistenceRequired();
+        setPermanentlyInvulnerable(true);
         setNoAi(true);
         setNoGravity(true);
         setSilent(true);
@@ -48,12 +50,15 @@ public final class Understudy extends Mob {
     public boolean isWatching(UUID player) { return player.equals(watchedPlayer); }
 
     @Override public boolean hurtServer(ServerLevel level, DamageSource source, float amount) { return false; }
+    // Checkpoint/debug spawns persist; player-owned encounters are always temporary.
+    @Override public boolean shouldBeSaved() { return watchedPlayer == null && super.shouldBeSaved(); }
+
     @Override public boolean isPushable() { return false; }
 
     @Override public void tick() {
         setDeltaMovement(Vec3.ZERO);
         super.tick();
-        if (!(level() instanceof ServerLevel world)) return;
+        if (!(level() instanceof ServerLevel world) || watchedPlayer == null) return;
         ServerPlayer target = watchedPlayer == null ? null : world.getServer().getPlayerList().getPlayer(watchedPlayer);
         if (target == null || target.level() != world || !target.isAlive() || target.isSpectator()) {
             discard();
@@ -109,7 +114,8 @@ public final class Understudy extends Mob {
         Vec3 step = player.position().subtract(position()).multiply(1, 0, 1).normalize().scale(0.28);
         var box = getBoundingBox().move(step);
         // No block edits, chunk loads, climbing, or path searches in this milestone.
-        if (world.hasChunkAt(blockPosition().offset((int) Math.signum(step.x), 0, (int) Math.signum(step.z)))
+        var nextPosition = blockPosition().offset((int) Math.signum(step.x), 0, (int) Math.signum(step.z));
+        if (world.getChunkSource().hasChunk(nextPosition.getX() >> 4, nextPosition.getZ() >> 4)
                 && world.noCollision(this, box) && !world.containsAnyLiquid(box)
                 && !world.noCollision(this, box.move(0, -0.1, 0))) {
             setPos(position().add(step));

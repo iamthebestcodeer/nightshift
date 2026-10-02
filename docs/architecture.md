@@ -1,6 +1,6 @@
 # Architecture and milestones
 
-The [design plan](../plans/horror-mod-design-plan.md) defines behavior. This document describes implementation boundaries, not additional gameplay decisions. The Understudy, Hollow, Seen, and four command-driven environmental scenes are implemented. The generic look-back face/scream has been removed; rare big scares await a later design. Singleplayer client-world checks have passed; dedicated-server world and multiplayer verification remain pending. Theft and later milestones are unimplemented.
+The [design plan](../plans/horror-mod-design-plan.md) defines behavior. This document describes implementation boundaries, not additional gameplay decisions. The stationary checkpoint, operator state/debug commands, UUID-keyed progression foundation, stalking Understudy, Hollow, Seen, and four command-driven environmental scenes are implemented. The generic look-back face/scream has been removed; rare big scares await a later design. Singleplayer client-world checks have passed; dedicated-server world and multiplayer verification remain pending. Theft and later milestones are unimplemented.
 
 ## Agreed stack
 
@@ -41,6 +41,8 @@ Keep work on the game tick bounded. Avoid scanning entire worlds or repeating ex
 
 The server owns encounters, saved state, and world changes. Clients display what the server authorizes. Keep world-wide progression and permanent banishment separate from per-player anger, effects, and theft/recovery records. Choose save formats and networking payloads when implementing the first feature that needs them, following the saved-state foundation above.
 
+`NightshiftSavedData` stores the world phase and a UUID-keyed map of immutable `PlayerState` records in the overworld's `data/nightshift/state.dat`. Every dimension retrieves that same save through the server. Records contain nonnegative integer anger and theft count plus a bed theft flag, with zero/false defaults. Mutations mark the save dirty; reads do not create records. Plain Java state and phase labels live in `nightshift.encounter`; codecs and Minecraft storage access live in `nightshift.world`. Phase changes currently affect saved labels only, with no automatic progression or banishment behavior.
+
 Passive marked bridge/wall scenes are an approved exception while the actor is not attacking. They place into empty cells only and never break blocks. Centralize block-edit eligibility when implementing sieges: The Understudy may place or break only at midnight and only when angry at its target. Minion wall breaking needs its own explicit rules; minions cannot build or bridge. Do not silently treat these as the same actor.
 
 ## Build order
@@ -53,7 +55,7 @@ Start with the following sequence, then continue the design plan's build order. 
 4. Add Hollow and Seen, then environmental scenes. Rare big jump scares are deferred.
 5. Continue with theft and the remaining milestones below.
 
-Steps 1 and 2 have passed singleplayer client-world checks; dedicated-server world and two-client verification remain pending before marking them fully verified as playable. The stationary entity is the first checkpoint within step 1.
+The stationary entity (build-order step 2) is the first checkpoint within milestone step 1. Its commands and saved state remain available alongside stalking/effects. Dedicated-server worlds and two-client verification remain pending.
 
 | Step | Deliverable | Manual verification focus |
 | --- | --- | --- |
@@ -93,3 +95,5 @@ The owner approved these settings for stalking and the first two effects:
 - The base copy is a non-colliding, temporary visual apparition of the marked block states. It neither changes the destination nor copies inventories or other block-entity data. Replica dimensions are limited by volume rather than wall width/height. The reference volume is capped at 4096 cells and the visible copy at 512 non-air cells. It expires after 30 seconds or when its owner approaches within eight blocks of its first visible block. Its render distance includes the geometry’s extent, and tracking is anchored to actual visible geometry rather than an empty marked corner.
 - The quiet tunnel command chooses supported empty space 4–6 blocks behind the player. The actor stays still with its arms at its sides, then leaves within two blocks or after 30 seconds. Automatic mining/tunnel triggers are deferred.
 - Encounter deadlines are saved by UUID in server saved data across dimensions. Active entities are temporary and are not saved; reserved deadlines survive reconnects and world reloads. The old scare deadline remains in the save format for compatibility but no longer drives gameplay. Normal status-effect persistence uses Minecraft's player data. Long-term anger, theft, progression, and banishment are still outside this milestone.
+
+Debug `/nightshift spawn` and vanilla summon create persistent stationary checkpoint entities. Encounter-owned entities are unsaved and retreat normally. Encounter deadlines use their separate UUID-keyed encounter save; anger, theft, and phase remain authoritative in `NightshiftSavedData`. Phase commands change saved labels without gating the approved first-playable encounter scheduler.

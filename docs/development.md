@@ -24,7 +24,7 @@ Add providers to `NightshiftDataGenerator`, then use `./gradlew runDatagen`. The
 
 ## Verification
 
-Run `./gradlew build` after code or resource changes. GitHub Actions also builds with JDK 25 and uploads `build/libs/`. The build also runs dependency-free checks for encounter timing and visibility boundaries, save serialization, and per-player data isolation via `gameplayRulesTest`. These checks do not replace in-world verification.
+Run `./gradlew build` after code or resource changes. GitHub Actions also builds with JDK 25 and uploads `build/libs/`. The build retains the foundation’s Fabric Loader JUnit tests and strict `-Xlint:all,-classfile -Werror` compilation (the external JOML legacy classfile annotation warning is exempt; source warnings remain errors), and also runs dependency-free checks for encounter timing and visibility boundaries, save serialization, and per-player data isolation via `gameplayRulesTest`. These checks do not replace in-world verification.
 
 Before considering a gameplay milestone complete, verify it in a client world and check dedicated-server startup for client class loading errors. For multiplayer-sensitive changes, test two players and confirm anger, stolen items, and effects stay scoped to the correct player. Record actual checks performed; compilation alone does not verify gameplay.
 
@@ -81,3 +81,21 @@ Current focused verification passed `./gradlew build` (including geometry, timin
 These small flat-world tests do not establish performance in representative complex worlds. Actual two-client isolation and a dedicated-server world remain unverified.
 
 Bug regression checks also passed in actual client worlds: destructive material rejection beside redstone, collision-safe initial spawn and per-tick construction movement, retreat before any placement, occupied-cell retry, a 40-cell replica reference, a sparse replica with a distant empty marked corner reaching the client, and unsupported ocean sightings being rejected. Presentation checks inspect actual sound-engine category gains after stop/reload, resource reload, dimension change, and Hollow removal. A client-only sound-engine reset hook invalidates the cached gain, including while paused. The head-turn harness now waits for an actual server head-snap tick. Logs: `build/reports/nightshift-inworld/bug-regressions-construction.log` (scene checks passed; its later presentation check found the harness timing issue) and `build/reports/nightshift-inworld/bug-regressions-audio.log` (presentation rerun passed).
+
+## Checkpoint debug commands
+
+These commands require gamemaster permission (operator level 2), including inspection of hidden state. No gameplay HUD or anger meter is added.
+
+| Command | Behavior |
+| --- | --- |
+| `/nightshift anger` or `/nightshift anger get [player]` | Inspect anger; defaults to the executing player. |
+| `/nightshift anger set <value> [player]` | Set nonnegative integer anger; defaults to the executing player. Console callers must name an online player. |
+| `/nightshift phase` | Inspect the saved world phase. |
+| `/nightshift phase set <phase>` | Set `oddities`, `watching`, `stalking`, `grudge`, `siege_nights`, `bed_theft`, or `ritual`. These are debug labels without encounter/progression behavior yet. |
+| `/nightshift spawn [x y z]` | Spawn a stationary Understudy at the command source or the supplied position; relative coordinates work. |
+
+Vanilla `/summon nightshift:understudy` also works. Operator/vanilla summons remain stationary and persistent; normal per-player sightings now spawn through the encounter scheduler. Theft count and the bed theft flag have a persistence API and tests; actual theft is a later milestone.
+
+Checkpoint verification (2026-10-01): `./gradlew build` passed, including seven unit tests and strict compiler lint. The unit tests include the unknown-phase reload regression, which verifies that player records survive an unrecognized saved phase. `./gradlew runClientGameTest` passed in an actual client/integrated server, including spawn/render dispatch, stationary behavior, debug commands, world reopen, both UUID records, all three player fields, saved phase, and entity reload. The custom skin was also inspected in a game screenshot. `./gradlew runServer` loaded Nightshift without client-class errors but stopped at the unaccepted `run/eula.txt`; full dedicated-server startup remains unverified. Two connected players have not been tested; automated UUID isolation is verified.
+
+After merging the stationary-checkpoint foundation from `master`, the build passed its seven JUnit tests plus encounter rules. A combined real-client checkpoint/watch run passed debug-command behavior, both player-state records, phase/entity save and reopen, renderer dispatch, and watching commands. Its log is `build/reports/nightshift-inworld/master-merge-checkpoint-watch.log`. All five client test entrypoints are retained.

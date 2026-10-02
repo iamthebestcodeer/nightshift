@@ -25,7 +25,7 @@ loom {
 fabricApi {
     configureTests {
         createSourceSet = true
-        modId = "nightshift-gametest"
+        modId = "nightshift-test"
         enableGameTests = false
         enableClientGameTests = true
         eula = false
@@ -44,6 +44,7 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
 }
 
 processResources {
@@ -57,6 +58,8 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.release = 25
+	// JOML ships malformed legacy classfile annotations; retain all source lint as errors.
+	it.options.compilerArgs += ['-Xlint:all,-classfile', '-Werror']
 }
 
 java {
@@ -103,9 +106,9 @@ tasks.register('gameplayRulesTest', JavaExec) {
 }
 check.dependsOn gameplayRulesTest
 
-// The dependency-free runner above executes these tests instead of a JUnit engine.
+// Foundation tests use JUnit; encounter rule checks retain their dependency-free runner.
 tasks.named('test') {
-    failOnNoDiscoveredTests = false
+    useJUnitPlatform()
 }
 
 // Keep the optional real-client test harness compiling during ordinary builds.

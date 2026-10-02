@@ -5,7 +5,6 @@ import nightshift.entity.NightshiftEntities;
 import nightshift.entity.Understudy;
 import nightshift.world.EncounterSavedData;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -58,7 +57,7 @@ public final class EncounterDirector {
     private static boolean spawn(ServerPlayer player) { return spawn(player, false); }
 
     private static boolean spawn(ServerPlayer player, boolean ahead) {
-        ServerLevel world = (ServerLevel) player.level();
+        ServerLevel world = player.level();
         for (int attempt = 0; attempt < 8; attempt++) {
             double angle = ahead
                     ? Math.atan2(player.getLookAngle().z, player.getLookAngle().x) + (attempt % 3 - 1) * 0.15
@@ -66,7 +65,7 @@ public final class EncounterDirector {
             int distance = ahead ? 24 + attempt : 24 + player.getRandom().nextInt(13);
             int x = (int) Math.floor(player.getX() + Math.cos(angle) * distance);
             int z = (int) Math.floor(player.getZ() + Math.sin(angle) * distance);
-            if (!world.hasChunkAt(new BlockPos(x, player.getBlockY(), z))) continue;
+            if (!world.getChunkSource().hasChunk(x >> 4, z >> 4)) continue;
             int y = world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
             if (Math.abs(y - player.getY()) > 12) continue;
             Understudy entity = new Understudy(NightshiftEntities.UNDERSTUDY, world);

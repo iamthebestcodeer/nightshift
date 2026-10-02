@@ -22,7 +22,7 @@ public final class CommandClientTest implements FabricClientGameTest {
             world.getServer().runOnServer(server -> {
                 var source = server.getPlayerList().getPlayers().getFirst().createCommandSourceStack();
                 var root = server.getCommands().getDispatcher().getRoot().getChild("nightshift");
-                check(!root.canUse(source.withPermission(LevelBasedPermissionSet.ALL)), "ordinary players cannot use test commands");
+                check(!root.canUse(source.withPermission(net.minecraft.server.permissions.PermissionSet.NO_PERMISSIONS)), "ordinary players cannot use test commands");
                 check(root.canUse(source.withPermission(LevelBasedPermissionSet.GAMEMASTER)), "operators can use test commands");
             });
             command(world, "watch");
