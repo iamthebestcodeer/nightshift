@@ -23,12 +23,14 @@ loom {
 }
 
 fabricApi {
-	configureTests {
-		createSourceSet = true
-		modId = "nightshift-test"
-		enableGameTests = false
-		enableClientGameTests = true
-	}
+    configureTests {
+        createSourceSet = true
+        modId = "nightshift-test"
+        enableGameTests = false
+        enableClientGameTests = true
+        eula = false
+        clearRunDirectory = false
+    }
 	configureDataGeneration {
 		client = true
 		modId = "nightshift"
@@ -56,15 +58,8 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.release = 25
-	it.options.compilerArgs += ['-Xlint:all', '-Werror']
-}
-
-test {
-	useJUnitPlatform()
-}
-
-check {
-	dependsOn gametestClasses
+	// JOML ships malformed legacy classfile annotations; retain all source lint as errors.
+	it.options.compilerArgs += ['-Xlint:all,-classfile', '-Werror']
 }
 
 java {
@@ -102,3 +97,19 @@ publishing {
 		// retrieving dependencies.
 	}
 }
+
+// Verify gameplay rules and save serialization without a game launch or test framework.
+tasks.register('gameplayRulesTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'nightshift.encounter.EncounterRulesTest'
+}
+check.dependsOn gameplayRulesTest
+
+// Foundation tests use JUnit; encounter rule checks retain their dependency-free runner.
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// Keep the optional real-client test harness compiling during ordinary builds.
+check.dependsOn compileGametestJava

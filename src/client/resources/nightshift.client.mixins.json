@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "nightshift.client.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["SoundEngineMixin"],
+  "injectors": {"defaultRequire": 1}
+}

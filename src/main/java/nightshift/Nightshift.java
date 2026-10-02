@@ -2,8 +2,6 @@ package nightshift;
 
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.Identifier;
-import nightshift.command.NightshiftCommands;
-import nightshift.entity.NightshiftEntities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,10 +10,14 @@ public final class Nightshift implements ModInitializer {
     public static final String MOD_ID = "nightshift";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+    /** Registers common entities, effects, commands, and the server encounter scheduler. */
     @Override
     public void onInitialize() {
-        NightshiftEntities.register();
-        NightshiftCommands.register();
+        nightshift.entity.NightshiftEntities.initialize();
+        nightshift.command.NightshiftCommands.register();
+        nightshift.effect.NightshiftEffects.initialize();
+        nightshift.encounter.EncounterDirector.initialize();
+        nightshift.command.NightshiftTestCommands.initialize();
         LOGGER.info("Initializing Nightshift");
     }
 
